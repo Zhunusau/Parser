@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using AngleSharp.Dom;
@@ -12,14 +14,12 @@ namespace KufarParser.Kufar
 {
     class KufarParser : IParser<List<Lot>>
     {
-        public List<Lot> Parse(IHtmlDocument document)
+        public async Task<List<Lot>> Parse(IHtmlDocument document)
         {
             var lots = new List<Lot>();
 
             var articles = document.QuerySelectorAll("article")
                 .Where(item => item.ClassName != null && item.ClassName.Contains("list_ads__item "));
-
-            var img = document.QuerySelectorAll("img");
 
             foreach (var article in articles)
             {
@@ -27,23 +27,8 @@ namespace KufarParser.Kufar
                 IElement date;
                 IElement location;
                 IElement price;
-                //string image;
                 IAttr link;
-
-                var imageContainer = article.QuerySelectorAll("div")
-                    .FirstOrDefault(item => item.ClassName != null && item.ClassName.Contains("list_ads__image_container"));
-
-                //if (imageContainer == null) continue;
-                {
-                    //image = imageContainer.GetElementsByTagName("img")[0].GetAttribute("src");
-                    //var dataImages = imageContainer?.QuerySelectorAll("a").FirstOrDefault();
-
-                    //var images = dataImages?.Children.Attr("src");
-                    //.Where(item => item.Attributes["src"] != null)
-                    //.Select(item => item.Attributes["src"]);
-
-                    //image = images?.First();
-                }
+                string image = null;
 
                 var infoContainer = article.QuerySelectorAll("div")
                     .FirstOrDefault(item => item.ClassName != null && item.ClassName.Contains("list_ads__info_container"));
@@ -72,6 +57,22 @@ namespace KufarParser.Kufar
                         .QuerySelectorAll("span").FirstOrDefault();
                 }
 
+                #region GetImage
+                var client = new HttpClient();
+                var parser = new HtmlParser();
+                var response = await client.GetAsync(link?.Value);
+
+                if (response != null && response.StatusCode == HttpStatusCode.OK)
+                {
+                    var source = await response.Content.ReadAsStringAsync();
+                    var productDocument = await parser.ParseAsync(source);
+                    image = productDocument.QuerySelectorAll("img")
+                        .FirstOrDefault(item => item.ClassName != null && item.ClassName.Contains("adview_image__base"))?
+                        .GetAttribute("data-src");
+                }
+                #endregion
+
+
                 lots.Add(new Lot
                 {
                     Name = name?.TextContent.Trim(),
@@ -79,7 +80,7 @@ namespace KufarParser.Kufar
                     Location = location?.TextContent.Trim(),
                     Price = price?.TextContent.Trim(),
                     Link = link?.Value,
-                    //Image = image
+                    Image = image
                 });
             }
 

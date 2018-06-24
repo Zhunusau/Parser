@@ -54,7 +54,7 @@ namespace KufarParser
                 var source = await loader.GetSourceByPageId(i);
                 var domParser = new HtmlParser();
                 var document = await domParser.ParseAsync(source);
-                var result = Parser.Parse(document);
+                var result = await Parser.Parse(document);
 
                 OnNewData?.Invoke(i, result);
             }
