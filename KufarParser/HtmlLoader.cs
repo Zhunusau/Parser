@@ -13,12 +13,12 @@ namespace KufarParser
         public HtmlLoader(IParserSettings settings)
         {
             client = new HttpClient();
-            url = $"{settings.BaseUrl}/{settings.Region}/{settings.Filter}--{settings.Category}/{settings.Prefix}";
+            url = $"{settings.BaseUrl}/{settings.Prefix}";
         }
 
-        public async Task<string> GetSourceByPageId(int id)
+        public async Task<string> GetSourceByPageId(int page)
         {
-            var currentUrl = url.Replace("{currentId}", id.ToString());
+            var currentUrl = url.Replace("{currentPage}", page.ToString());
             var response = await client.GetAsync(currentUrl);
             string source = null;
 

@@ -12,20 +12,17 @@ namespace KufarParser
             try
             {
                 var parser = new ParserWorker<List<Lot>>(new Kufar.KufarParser());
+
                 parser.OnCompleted += Parser_OnCompleted;
                 parser.OnNewData += Parser_OnNewData;
 
                 Console.WriteLine("Enter the filter");
                 string filter = Console.ReadLine();
 
-                Console.WriteLine("Enter start page number:");
-                int startPage = Convert.ToInt32(Console.ReadLine());
-
-                Console.WriteLine("Enter end page number:");
-                int endPage = Convert.ToInt32(Console.ReadLine());
-
-                parser.Settings = new KufarSettings(startPage, endPage, filter);
+                parser.Settings = new KufarSettings(filter);
                 parser.Start();
+
+                //if(Console.ReadKey().Equals("Q")) parser.Abort();
 
                 Console.ReadKey();
             }
@@ -46,7 +43,7 @@ namespace KufarParser
             foreach (var lot in lots)
             {
                 Console.WriteLine($"> {lot.Name} {lot.Location} {lot.DateOfUpdate} {lot.Price}\n" +
-                                  $"  {lot.Link}\n {lot.Image}\n");
+                                  $"  {lot.Link}\n  {lot.Image}\n");
             }
         }
     }

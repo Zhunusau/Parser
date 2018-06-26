@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using AngleSharp;
 using AngleSharp.Parser.Html;
 using KufarParser.Interfaces;
+using KufarParser.Kufar;
+using AngleSharp.Scripting.JavaScript;
 
 namespace KufarParser
 {
@@ -43,20 +47,23 @@ namespace KufarParser
 
         private async void Worker()
         {
-            for (int i = parserSettings.StartPoint; i <= parserSettings.EndPoint; i++)
+            //Can use while(true), however may be a loop
+            for (int page = 1; page <= 100; page++)
             {
                 if (!IsActive)
                 {
                     OnCompleted?.Invoke(this);
                     return;
                 }
-
-                var source = await loader.GetSourceByPageId(i);
-                var domParser = new HtmlParser();
+                var config = Configuration.Default.WithJavaScript().WithCss();
+                var source = await loader.GetSourceByPageId(page);
+                var domParser = new HtmlParser(config);
                 var document = await domParser.ParseAsync(source);
                 var result = await Parser.Parse(document);
 
-                OnNewData?.Invoke(i, result);
+                if(result == null) break;
+
+                OnNewData?.Invoke(page, result);
             }
             OnCompleted?.Invoke(this);
             IsActive = false;

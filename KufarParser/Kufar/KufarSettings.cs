@@ -4,11 +4,10 @@ namespace KufarParser.Kufar
 {
     class KufarSettings : IParserSettings
     {
-        public KufarSettings(int start, int end, string filter)
+        public KufarSettings(string filter)
         {
-            StartPoint = start;
-            EndPoint = end;
             Filter = filter;
+            Prefix = $"{Region}/{Filter}--{Category}?{Param}";
         }
 
         public string BaseUrl { get; set; } = "https://www.kufar.by";
@@ -19,10 +18,8 @@ namespace KufarParser.Kufar
 
         public string Category { get; set; } = "продается";
 
-        public string Prefix { get; set; } = "cu=BYR&o={currentId}";
+        public string Param { get; set; } = "cu=BYR&o={currentPage}";
 
-        public int StartPoint { get; set; }
-
-        public int EndPoint { get; set; }
+        public string Prefix { get; set; }
     }
 }
